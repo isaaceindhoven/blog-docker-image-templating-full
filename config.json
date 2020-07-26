@@ -1,0 +1,21 @@
+{
+  "registry": {
+    "domain": "<URL to ISAAC's image registry redacted>",
+    "https": true,
+    "credentials": "<Credential's key redacted>"
+  },
+  "magento": {
+    "versions": [
+      {
+        "version": "2.3",
+        "php": ["7.2", "7.3"],
+        "node": ["10", "12"]
+      },
+      {
+        "version": "2.2",
+        "php": ["7.0", "7.1", "7.2"],
+        "node": ["10", "12"]
+      }
+    ]
+  }
+}

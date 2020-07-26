@@ -1,0 +1,11 @@
+{#- Extend from the builder-base.Dockerfile created images -#}
+FROM {{ registry }}/magento/builder-base/php-{{ php }}/node-{{ node }}
+
+{# Use the magento/builder-source images for the source files #}
+COPY --from={{ registry }}/magento/builder-source:latest /app/m2b/ /m2b/
+
+RUN chmod u+x /m2b/bin/m2b 
+RUN ln -s /m2b/bin/m2b /usr/bin/m2b
+
+{# Reset the entrypoint #}
+ENTRYPOINT []

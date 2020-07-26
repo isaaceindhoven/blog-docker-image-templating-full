@@ -1,0 +1,2 @@
+# The Dockerfiles we build don't depend on any other files in this repository, hence we can ignore everything
+**

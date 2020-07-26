@@ -1,0 +1,90 @@
+FROM php:{{ php }}-cli
+
+{# Install Magento dependencies for all 2.x versions -#}
+RUN apt-get update \                               
+
+{#- Skip recommended installs to reduce image size #}
+    && apt-get install -y --no-install-recommends \
+        git \
+        gnupg \
+        libfreetype6-dev \
+        libicu-dev \
+        libjpeg62-turbo-dev \
+        libpng-dev \
+        libxslt1-dev \
+        mariadb-client \
+        procps \
+        ssh \
+        unzip \
+        zip \
+        wget \
+
+{#- Install Magento dependencies specific to PHP version 7.0, 7.1 or 7.2 #}
+{%- if (php === "7.0" or php === "7.1" or php === "7.2") %}
+        libbz2-dev \
+        zlib1g-dev \
+
+{#- Install Magento dependencies specific to PHP version 7.3 #}
+{%- elif (php === "7.3") %}
+        libzip-dev \
+{%- endif %}
+{%- if (php === "7.0" or php === "7.1") %}
+        libmcrypt-dev \
+{%- endif %}
+
+{#- Clean excessive dependencies #}
+    && rm -rf /var/lib/apt/lists/* \
+
+{#- Configure the GD PHP extension #}
+    && docker-php-ext-configure gd \
+        --with-freetype-dir=/usr/include/ \
+        --with-jpeg-dir=/usr/include/ \
+
+{#- Configure the intl PHP extension #}
+    && docker-php-ext-configure intl \
+
+{#- Configure the zip PHP extension if we are using PHP 7.3 #}
+{%- if (php === "7.3") %}
+    && docker-php-ext-configure zip \
+        --with-libzip \
+{%- endif %}
+
+{#- Install PHP extensions for all Magento 2.x versions #}
+    && docker-php-ext-install \
+        bcmath \
+        -j$(nproc) gd \
+        -j$(nproc) iconv \
+        intl \
+        mysqli \
+        pdo \
+        pdo_mysql \
+        soap \
+        sockets \
+        xsl \
+        zip \
+
+{#- Install PHP extensions specific to PHP version 7.0, 7.1 or 7.2 #}
+{%- if (php === "7.0" or php === "7.1" or php === "7.2") %}
+        bz2 \
+{%- endif %}
+
+{#- Install mcrypt #}
+{%- if (php === "7.0" or php === "7.1") %}
+        -j$(nproc) mcrypt \
+{%- endif %}
+
+{#- Install xdebug #}
+{%- if (php !== "7.0") %}
+    && pecl install xdebug \
+
+{#- Create a symlink to the no-debug-non-zts-xxx extensions directory to have the same extensions path for all images #}
+    && ln -s $(php-config --extension-dir) /usr/local/lib/php/extensions/latest \
+{%- endif %}
+
+{#- Make conf.d file writable and executable by all users #}
+    && chmod 0777 /usr/local/etc/php/conf.d
+
+{# Get Composer #}
+COPY --from=composer:1 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /app

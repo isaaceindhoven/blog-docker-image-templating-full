@@ -1,0 +1,13 @@
+configuration-as-code
+workflow-cps
+workflow-job
+workflow-aggregator
+pipeline-utility-steps
+ansicolor
+job-dsl
+ssh-credentials
+credentials
+credentials-binding
+git
+envinject
+docker-workflow

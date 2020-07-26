@@ -1,0 +1,55 @@
+version: "3.4"
+services:
+  jenkins:
+    build: ./jenkins-config
+    container_name: jenkins
+    restart: unless-stopped
+    ports:
+      - 8081:8080
+      - 50000:50000
+    volumes:
+      - //var/run/docker.sock:/var/run/docker.sock
+      - jenkins_home:/var/jenkins_home
+    user: root
+    environment:
+      - ADMIN_PASSWORD=${JENKINS_ADMIN_PASSWORD}
+      - PIPELINE_BRANCH=${JENKINS_PIPELINE_BRANCH}
+      - GIT_USERNAME=${GIT_USERNAME}
+      - GIT_PERSONAL_ACCESS_TOKEN=${GIT_PERSONAL_ACCESS_TOKEN}
+      - GIT_REPOSITORY=${GIT_REPOSITORY}
+      - REGISTRY_CONFIG_OVERWRITE=${REGISTRY_CONFIG_OVERWRITE}
+    networks:
+      - internal
+
+  registry:
+    image: registry:2
+    container_name: registry
+    restart: unless-stopped
+    ports:
+      - 80:5000
+    volumes:
+      - docker_registry:/var/lib/registry
+      - ./docker-registry-config.yml:/etc/docker/registry/config.yml
+    networks:
+      - internal
+
+  registry_ui:
+    image: joxit/docker-registry-ui:static
+    container_name: registry_ui
+    restart: unless-stopped
+    ports:
+      - 8082:80
+    environment:
+      - URL=http://localhost
+      - DELETE_IMAGES=true
+      - REGISTRY_TITLE=🐋 Walvissen Containers™
+    networks:
+      - internal
+
+networks:
+  internal:
+    external: false
+
+volumes:
+  docker_registry:
+  jenkins_home:

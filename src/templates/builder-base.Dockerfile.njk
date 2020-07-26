@@ -1,0 +1,12 @@
+{#- Extend from the base.Dockerfile created images -#}
+FROM {{ registry }}/magento/base/php-{{ php }}
+
+{# Install Node.js #}
+RUN curl -sL https://deb.nodesource.com/setup_{{ node }}.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+
+{#- Install Gulp #}
+    && /usr/bin/npm install -g gulp-cli \
+
+{#- Clean excessive dependencies #}
+    && rm -rf /var/lib/apt/lists/*
